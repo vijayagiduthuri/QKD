@@ -68,12 +68,50 @@ export const createAuction = async (req, res) => {
 // Get Upcoming Auctions
 export const getUpcomingAuctions = async (req, res) => {
   try {
-    const upcoming = await Auction.find({ status: "upcoming" });
-    return res.status(200).json({ upcoming });
+    const upcomingAuctions = await Auction.find({
+      status: "upcoming",
+    }).populate("auctionerId", "name");
+
+    const formatted = upcomingAuctions.map((auction) => {
+      const startDate = new Date(auction.startDateTime);
+      const endDate = new Date(auction.endDateTime);
+
+      // Format as DD-MM-YYYY HH:MM
+      const startTime = `${startDate.getDate().toString().padStart(2, "0")}-${(
+        startDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}-${startDate.getFullYear()} ${startDate.toLocaleTimeString(
+        "en-GB",
+        { hour: "2-digit", minute: "2-digit" }
+      )}`;
+
+      const endTime = `${endDate.getDate().toString().padStart(2, "0")}-${(
+        endDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}-${endDate.getFullYear()} ${endDate.toLocaleTimeString(
+        "en-GB",
+        { hour: "2-digit", minute: "2-digit" }
+      )}`;
+
+      return {
+        _id: auction._id,
+        title: auction.title,
+        auctioneer: auction.auctionerId?.name || "Unknown", // name
+        auctionerId: auction.auctionerId?._id || null, // separate id
+        startTime,
+        endTime,
+        baseAmount: auction.basePrice || 0,
+      };
+    });
+
+    res.json({ upcoming: formatted });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
+
 
 // Get Ongoing Auctions
 export const getOngoingAuctions = async (req, res) => {
@@ -85,13 +123,30 @@ export const getOngoingAuctions = async (req, res) => {
   }
 };
 
-// Get Past Auctions
+//Get Past auctions
 export const getPastAuctions = async (req, res) => {
   try {
-    const past = await Auction.find({ status: "past" });
-    return res.status(200).json({ past });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    // Find past auctions and populate auctioner name
+    const pastAuctions = await Auction.find({ status: "past" }).populate(
+      "auctionerId",
+      "name"
+    );
+
+    // Example winning bids array (randomized)
+    const winningBids = ["₹180000", "₹200000", "₹220000", "₹250000", "₹300000"];
+
+    // Format response
+    const formatted = pastAuctions.map((auction, index) => ({
+      _id: auction._id,
+      title: auction.title,
+      auctioneer: auction.auctionerId?.name || "Unknown",
+      completionDate: auction.endDateTime.toISOString().split("T")[0],
+      winningBid: winningBids[index % winningBids.length], // cycle through array
+    }));
+
+    res.json({ past: formatted });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -224,3 +279,38 @@ export const getOngoingAuctionsById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 }
+
+export const getAuctionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // populate only existing fields on Auctioner (here: name)
+    const auction = await Auction.findById(id)
+      .select("-file") 
+      .populate("auctionerId", "name")
+      .lean();
+
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    return res.status(200).json(auction);
+  } catch (err) {
+    console.error("getAuctionById error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getAuctionImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const auction = await Auction.findById(id).select("file");
+    if (!auction || !auction.file) {
+      return res.status(404).send("No image found");
+    }
+    const imgBuffer = Buffer.from(auction.file, "base64");
+    res.set("Content-Type", "image/jpeg");
+    res.send(imgBuffer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

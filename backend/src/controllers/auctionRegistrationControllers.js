@@ -6,7 +6,7 @@ export const registerAuction = async (req, res) => {
   try {
     const { auctionId, userId, name, email, phone, address, key, auctionerId } =
       req.body;
-
+    console.log("Incoming registration body:", req.body);
     // Validate required fields
     if (
       !auctionerId ||
@@ -51,5 +51,40 @@ export const registerAuction = async (req, res) => {
   } catch (error) {
     console.error("Error in registerAuction:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getRegisteredAuctions = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Missing userId" });
+    }
+
+    // find all registrations by this user
+    const registrations = await AuctionRegistration.find({ userId }).select("auctionId");
+
+    // extract only auctionIds
+    const registeredAuctionIds = registrations.map((reg) => reg.auctionId.toString());
+
+    res.status(200).json({ registeredAuctionIds });
+  } catch (err) {
+    console.error("Error fetching registered auctions:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get if user is registered for an auction
+export const isUserRegistered = async (req, res) => {
+  try {
+    const { auctionId, userId } = req.params;
+    if (!auctionId || !userId) return res.status(400).json({ message: "Missing auctionId or userId" });
+
+    const registration = await AuctionRegistration.findOne({ auctionId, userId });
+    res.status(200).json({ registered: !!registration }); // true if found
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

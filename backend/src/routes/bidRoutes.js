@@ -5,7 +5,8 @@ import {
     getBidderKey,
     decryptBid,
     getbidderid,
-    hasPlacedBid
+    hasPlacedBid,
+    sendWinningMail
 } from "../controllers/bidControllers.js"
 import { protectRoute } from "../middlewares/jwtToken.js";
 
@@ -17,5 +18,6 @@ router.post("/get-bidder-key", getBidderKey)
 router.post("/decrypt-bid", decryptBid)
 router.get("/get-bidder-id",protectRoute, getbidderid)
 router.post("/has-placed-bit", hasPlacedBid)
+router.post("/winning-mail", sendWinningMail)
 
 export default router;
