@@ -218,7 +218,7 @@ const Signup = () => {
   // Success action
   const handleStartBidding = () => {
     // Navigate to dashboard or main app
-    console.log('Redirecting to dashboard...');
+    navigate('/signin');
     // window.location.href = '/dashboard';
   };
 
