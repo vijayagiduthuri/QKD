@@ -13,6 +13,10 @@ import LiveAuction from "./pages/Auctions/LiveAuction";
 import ViewLiveAuction from "./pages/Auctions/ViewLiveAuction";
 import UserProfile from "./pages/UserProfile";
 import MyAuctions from "./pages/MyAuctions";
+import PaymentCallback from "./pages/PaymentCallback";
+import UpcomingAuctions from "./components/auction/UpcomingAuctions";
+import OngoingAuctions from "./components/auction/OngoingAuctions";
+import CompletedAuctions from "./components/auction/CompletedAuctions";
 
 
 function App() {
@@ -29,7 +33,11 @@ function App() {
       <Route path="/faqs" element={<Faqs/>}/>
       <Route path="/view-auction" element={<ViewLiveAuction/>}/>
       <Route path="/profile" element={<UserProfile/>}/>
-      <Route path="my-auctions" element={<MyAuctions/>}/>
+      <Route path="/my-auctions" element={<MyAuctions/>}/>
+       <Route path="/payment-callback" element={<PaymentCallback />} />
+      <Route path="/upcoming-auctions" element={<UpcomingAuctions userId={localStorage.getItem("userId")} />} />
+      <Route path="/ongoing-auctions" element={<OngoingAuctions/>} />
+      <Route path="/past-auctions" element={<CompletedAuctions/>} />
     </Routes>
   );
 }

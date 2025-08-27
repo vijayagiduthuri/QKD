@@ -7,4 +7,5 @@ const auctionerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Auctioner", auctionerSchema);
+const Auctioner = mongoose.model("Auctioner", auctionerSchema); // fixed
+export default Auctioner;

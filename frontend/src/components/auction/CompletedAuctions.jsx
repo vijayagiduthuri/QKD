@@ -1,90 +1,110 @@
-import React from 'react';
-import { User, Calendar, Download } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { User, Calendar, Download } from "lucide-react";
+import axios from "axios";
 
 const CompletedAuctions = () => {
-  const ActionButton = ({ type, onClick }) => {
-    const styles = {
-      report: 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white'
+  const [completedAuctions, setCompletedAuctions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCompletedAuctions = async () => {
+      try {
+        const response = await axios.get("http://localhost:9000/api/auctions/past");
+        setCompletedAuctions(response.data.past);
+      } catch (err) {
+        setError("Failed to load completed auctions.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const icons = {
-      report: <Download className="w-3 h-3" />
-    };
+    fetchCompletedAuctions();
+  }, []);
 
-    const labels = {
-      report: 'Report'
-    };
+  const ActionButton = ({ onClick }) => (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold text-xs 
+        bg-gradient-to-r from-indigo-500 to-indigo-600 
+        hover:from-indigo-600 hover:to-indigo-700 
+        text-white transition-all duration-300 
+        hover:scale-105 hover:shadow-lg"
+    >
+      <Download className="w-3 h-3" />
+      Report
+    </button>
+  );
 
+  if (loading)
     return (
-      <button
-        onClick={onClick}
-        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold text-xs transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg ${styles[type]}`}
-      >
-        {icons[type]}
-        {labels[type]}
-      </button>
+      <p className="text-center text-slate-400 py-4">
+        Loading completed auctions...
+      </p>
     );
-  };
-
-  const completedAuctions = [
-    {
-      title: 'Server Hardware Auction',
-      auctioneer: 'Tech Solutions Inc.',
-      completionDate: 'Dec 20, 2024',
-      winningBid: '₹8,75,000',
-      status: 'COMPLETED'
-    },
-    {
-      title: 'Marketing Services Bid',
-      auctioneer: 'Creative Agency Ltd.',
-      completionDate: 'Dec 18, 2024',
-      winningBid: '₹2,50,000',
-      status: 'COMPLETED'
-    },
-    {
-      title: 'Catering Contract Auction',
-      auctioneer: 'Food Services Co.',
-      completionDate: 'Dec 15, 2024',
-      winningBid: '₹4,20,000',
-      status: 'COMPLETED'
-    }
-  ];
+  if (error) return <p className="text-center text-red-500 py-4">{error}</p>;
 
   return (
     <div className="bg-slate-800/60 backdrop-blur-lg border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 grid grid-cols-6 gap-3 font-semibold text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 
+        grid grid-cols-6 gap-3 font-semibold text-white text-sm md:text-base">
         <div className="col-span-2">Auction Title</div>
-        <div className="col-span-1">Auctioneer</div>
-        <div className="col-span-1">Completion Date</div>
-        <div className="col-span-1">Winning Bid</div>
-        <div className="col-span-1">Action</div>
+        <div>Auctioneer</div>
+        <div>Completion Date</div>
+        <div>Winning Bid</div>
+        <div>Action</div>
       </div>
-      {completedAuctions.map((auction, index) => (
-        <div
-          key={index}
-          className="px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-blue-500/5 transition-all duration-300 hover:transform hover:translate-x-2"
-        >
-          <div className="grid grid-cols-6 gap-3 items-center">
-            <div className="col-span-2 font-semibold text-slate-200">
-              {auction.title}
-            </div>
-            <div className="col-span-1 flex items-center gap-1 text-slate-400 text-sm">
-              <User className="w-3 h-3" />
-              {auction.auctioneer}
-            </div>
-            <div className="col-span-1 flex items-center gap-1 text-slate-400 text-sm">
-              <Calendar className="w-3 h-3" />
-              <span className="text-xs">{auction.completionDate}</span>
-            </div>
-            <div className="col-span-1 font-bold text-emerald-400">
-              {auction.winningBid}
-            </div>
-            <div className="col-span-1">
-              <ActionButton type="report" onClick={() => console.log('Download report')} />
+
+      {/* Rows */}
+      {Array.isArray(completedAuctions) && completedAuctions.length > 0 ? (
+        completedAuctions.map((auction, index) => (
+          <div
+            key={index}
+            className="px-4 py-3 border-b border-slate-700/30 
+              last:border-b-0 hover:bg-blue-500/5 
+              transition-all duration-300 hover:translate-x-1"
+          >
+            <div className="grid grid-cols-6 gap-3 items-center text-sm md:text-base">
+              {/* Title */}
+              <div className="col-span-2 font-semibold text-slate-200">
+                {auction.title}
+              </div>
+
+              {/* Auctioneer */}
+              <div className="flex items-center gap-1 text-slate-400 text-sm">
+                <User className="w-3 h-3" />
+                {auction.auctioneer}
+              </div>
+
+              {/* Date */}
+              <div className="flex items-center gap-1 text-slate-400 text-sm">
+                <Calendar className="w-3 h-3" />
+                <span>{auction.completionDate}</span>
+              </div>
+
+              {/* Winning Bid */}
+              <div className="font-bold text-emerald-400">
+                {auction.winningBid}
+              </div>
+
+              {/* Action */}
+              <div>
+                <ActionButton
+                  onClick={() =>
+                    console.log(`Download report for ${auction.title}`)
+                  }
+                />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      ) : (
+        <p className="text-center text-slate-400 py-4">
+          No completed auctions found.
+        </p>
+      )}
     </div>
   );
 };
