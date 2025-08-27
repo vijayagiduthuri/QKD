@@ -231,7 +231,7 @@ const LiveAuction = () => {
           prev.bidAmount > current.bidAmount ? prev : current
         );
         setWinner(winningBidder);
-
+    
         // show modal once
         if (!showWinnerModal) {
           setTimeout(() => setShowWinnerModal(true), 1000);
@@ -239,6 +239,31 @@ const LiveAuction = () => {
       }
     }
   }, [auctionEnded, bidders, winner, showWinnerModal]);
+
+
+  useEffect(() => {
+  if (winner) {
+    (async () => {
+      try {
+        console.log( winner.name, winner.bidAmount)
+        await fetch("http://localhost:9000/api/bids/winning-mail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            auctionId,
+            userId: winner.name,       // ⚠️ ensure this is correct userId
+            amount: winner.bidAmount,  // number
+          }),
+          
+        });
+        console.log("Winning mail sent successfully!");
+      } catch (err) {
+        console.error("Error sending winning mail:", err);
+      }
+    })();
+  }
+}, [winner]);
+
 
   const [auctionImage, setAuctionImage] = useState(null);
 
@@ -403,6 +428,8 @@ const LiveAuction = () => {
   const closeWinnerModal = () => {
     setShowWinnerModal(false);
   };
+    
+ 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 relative overflow-hidden">
