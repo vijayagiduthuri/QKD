@@ -144,10 +144,10 @@ const AuctionHomepage = () => {
     </button>
   );
 
-  const handleRegister = (auction) => {
-    setSelectedAuction(auction);
-    setShowRegistrationModal(true);
-  };
+  // const handleRegister = (auction) => {
+  //   setSelectedAuction(auction);
+  //   setShowRegistrationModal(true);
+  // };
 
   // Remove the handleView function as it's now handled in UpcomingAuctions component
   // const handleView = (auction) => {
@@ -415,7 +415,8 @@ const AuctionHomepage = () => {
         </div>
       )}
     </div>
-  );
-};
-
+    </div>
+    </div>
+  )
+}
 export default AuctionHomepage;
