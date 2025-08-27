@@ -5,6 +5,6 @@ import {
 
 const router = express.Router();
 
-router.post("/checkout", Checkout);
+router.post("/create-checkout-session", Checkout);
 
 export default router;

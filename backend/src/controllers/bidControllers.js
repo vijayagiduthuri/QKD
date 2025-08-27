@@ -120,6 +120,30 @@ export const getBidderKey = async (req, res) => {
   }
 };
 
+export const decryptBid = async (req, res) => {
+  try {
+    const { key, encryptedText } = req.body;
+
+    if (!key || !encryptedText) {
+      return res.status(400).json({
+        error: "key and encryptedText are required in request body",
+      });
+    }
+
+    const decryptedAmount = DecryptBid(key, encryptedText);
+
+    return res.status(200).json({
+      success: true,
+      decryptedAmount,
+    });
+  } catch (error) {
+    console.error("Decryption error:", error.message);
+    return res.status(500).json({
+      error: "Failed to decrypt bid",
+    });
+  }
+};
+
 export const getbidderid = async(req, res) => {
   try {
     // req.user is populated by protectRoute middleware
@@ -129,3 +153,22 @@ export const getbidderid = async(req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const hasPlacedBid = async (req, res) => {
+  try {
+    const { auctionId, userId } = req.body;
+
+    if (!auctionId || !userId) {
+      return res.status(400).json({ error: "auctionId and userId are required" });
+    }
+
+    // Check if bid exists
+    const bid = await Bid.findOne({ auctionId, userId }).lean();
+    const hasBid = !!bid;
+
+    return res.status(200).json({ placedBid: hasBid });
+  } catch (err) {
+    console.error("Error checking bid:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
